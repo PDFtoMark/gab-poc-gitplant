@@ -1,0 +1,36 @@
+---
+name: Consumer
+on:
+  workflow_run:
+    workflows: ["Producer"]
+    types: [completed]
+
+permissions:
+  contents: write
+
+jobs:
+  consume:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download plant artifact into workspace root
+        uses: actions/download-artifact@v4
+        with:
+          name: plant
+          run-id: ${{ github.event.workflow_run.id }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Inspect planted git dir
+        run: |
+          echo "=== ls ==="; ls -la
+          echo "=== .git ==="; ls -la .git || true
+          echo "=== hooks ==="; ls -la .git/hooks || true
+          stat -c '%a %n' .git/hooks/post-checkout 2>&1 || true
+          cat .git/config 2>&1 || true
+      - name: Checkout main (this should run prepareExistingDirectory)
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Did the hook run?
+        run: |
+          echo "--- /tmp/hook.txt:"; cat /tmp/hook.txt 2>&1 || echo "NO-HOOK"
+          ls -la .git/hooks | head
