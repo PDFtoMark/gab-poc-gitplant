@@ -18,19 +18,12 @@ jobs:
           name: plant
           run-id: ${{ github.event.workflow_run.id }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
-      - name: Inspect planted git dir
-        run: |
-          echo "=== ls ==="; ls -la
-          echo "=== .git ==="; ls -la .git || true
-          echo "=== hooks ==="; ls -la .git/hooks || true
-          stat -c '%a %n' .git/hooks/post-checkout 2>&1 || true
-          cat .git/config 2>&1 || true
-      - name: Checkout main (this should run prepareExistingDirectory)
+      - name: Checkout main (prepareExistingDirectory keeps planted .git)
         uses: actions/checkout@v4
         with:
           ref: main
           token: ${{ secrets.GITHUB_TOKEN }}
-      - name: Did the hook run?
+      - name: Filter execution proof
         run: |
-          echo "--- /tmp/hook.txt:"; cat /tmp/hook.txt 2>&1 || echo "NO-HOOK"
-          ls -la .git/hooks | head
+          echo "--- /tmp/smudge.txt:"; cat /tmp/smudge.txt 2>&1 || echo "NO-SMUDGE"
+          echo "--- /tmp/clean.txt:"; cat /tmp/clean.txt 2>&1 || echo "NO-CLEAN"

